@@ -193,10 +193,10 @@ function raceStep(dt){
   }
   for (let it = 0; it < 2; it++) for (const v of vehicles) if (!v.gone && isLocal(v)) { collide(v); keepOnRoad(v, 0); }
   for (const v of vehicles) if (!v.gone && isLocal(v)) stepStops(v, dt);
-  for (const v of vehicles) if (!v.gone) { syncMesh(v, dt); emitSmoke(v, dt); }
+  for (const v of vehicles) if (!v.gone) { syncMesh(v, dt); emitSmoke(v, dt); v.tag.visible = (v !== me || Game.cam !== 2) && camera.position.distanceTo(v.mesh.group.position) > 15; }
   updateSmoke(dt); stepCrates(dt); renderJams();
   waitAcc += dt; if (waitAcc > .2) { waitAcc = 0; updateWaiting(); }
-  chaseCam(dt);
+  if (Game.cine) Game.cine(dt); else chaseCam(dt);
   helperWatch(dt);
   hudAcc += dt; if (hudAcc > .1) { hudAcc = 0; updateHud(); }
   mmAcc += dt; if (mmAcc > .066) { mmAcc = 0; drawMinimap(); }

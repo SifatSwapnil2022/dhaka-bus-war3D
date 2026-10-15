@@ -1,5 +1,11 @@
 # dhaka-bus-war3D
 
+<p align="center">
+  <a href="media/dhaka-bus-war-promo.mp4"><img src="media/dhaka-bus-war-promo.gif" alt="Dhaka Bus War gameplay: Malibag rail gate, Kuril from above, the helper calling at Rampura" width="640"></a>
+</p>
+
+<p align="center"><b>▶ <a href="media/dhaka-bus-war-promo.mp4">Watch the 38-second trailer (MP4, with titles)</a></b></p>
+
 **ঢাকা বাস ওয়ার** is a 3D local-bus racing game set on Dhaka's real roads. You drive one of four real Dhaka buses (Bolaka, Raida, Shikor, Malancha), pick up jatri, drop them at the right stop and fight the other buses for passengers through rail gates, signals and broken roads.
 
 It runs in the browser. Nothing needs to be installed.
@@ -17,6 +23,17 @@ It runs in the browser. Nothing needs to be installed.
 - **Fair scoring:** BRTA fares (৳2.53 per km, minimum ৳10). Fines depend on how hard you hit something, and one collision is charged only once. Red lights and driving the wrong way are fined too. Whoever reaches the last stop first gets a bonus.
 - **AI rivals with personalities:** গরম ওস্তাদ (aggressive), পাকা ওস্তাদ (balanced), ঠান্ডা ওস্তাদ (cautious).
 - **Bus feel:** sprung suspension, front wheels that steer, chase / far / driver's-seat cameras.
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Approaching the Dhanmondi 27 stop](media/dhan-820.jpg) | ![The helper calling at Merul Badda](media/east-1335.jpg) |
+| Dhanmondi 27, on Satmasjid Road | Merul Badda: the helper calls jatri in Dhaka Bangla |
+| ![Kakrail on the way to Malibag](media/east-205.jpg) | ![Under the metro at Farmgate](media/metro-1500.jpg) |
+| Kakrail, heading for Malibag | Under MRT Line-6 at Farmgate |
+| ![Kuril junction from above](media/top-kuril.jpg) | ![Full map, north up](media/bigmap.jpg) |
+| Kuril junction from above | The full map (`N`), north up like Google Maps |
 
 ## Play
 
