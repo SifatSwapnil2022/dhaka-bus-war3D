@@ -1,0 +1,387 @@
+<meta charset="utf-8">
+<title>Dhaka Bus War</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@500;600;700;800&family=Galada&family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: full-bleed WebGL street; overlays painted like bus destination boards and rickshaw-art panels */
+:root{
+  --night:#17111a;
+  --panel:rgba(23,17,26,.82);
+  --panel-solid:#221a26;
+  --line:rgba(242,176,30,.28);
+  --paper:#f4ead6;
+  --muted:#b8a994;
+  --marigold:#f2b01e;
+  --kantha:#d6264f;
+  --teal:#13877b;
+  --leaf:#2f9a52;
+  --fine:#e23b3b;
+  --display:"Galada","Baloo Da 2",cursive;
+  --ui:"Baloo Da 2","Hind Siliguri",system-ui,sans-serif;
+  --body:"Hind Siliguri","Baloo Da 2",system-ui,sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--paper)}
+body{font-family:var(--body);font-size:15px;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--marigold);outline-offset:2px}
+.lbl{font-family:var(--ui);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+
+.screen{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;z-index:20;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-bottom,0px))}
+#menu{background:linear-gradient(90deg,rgba(23,17,26,.96) 0%,rgba(23,17,26,.9) 50%,rgba(23,17,26,.3) 80%,rgba(23,17,26,0) 100%)}
+#loading{display:grid;place-items:center;background:var(--night);z-index:40}
+#loading b{font-family:var(--display);font-weight:400;font-size:48px;color:var(--marigold);text-shadow:3px 3px 0 var(--kantha)}
+#loading span{display:block;text-align:center;color:var(--muted);margin-top:6px}
+.menu-col{max-width:600px;display:flex;flex-direction:column;gap:16px;padding-block:8px 24px}
+.brand{display:flex;flex-direction:column;gap:4px}
+.brand h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(46px,9vw,76px);line-height:1.02;color:var(--marigold);
+  text-shadow:3px 3px 0 var(--kantha),6px 6px 0 rgba(0,0,0,.35);text-wrap:balance}
+.brand .latin{font-family:var(--ui);font-weight:800;letter-spacing:.32em;font-size:13px;color:var(--paper)}
+.brand p{margin:6px 0 0;max-width:52ch;color:#e6d9c3;line-height:1.55}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.route-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.route-card{position:relative;text-align:left;background:var(--panel-solid);border:1.5px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 10px 10px;display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;min-width:0}
+.route-card canvas{width:64px;height:84px;border-radius:4px;background:#120d14}
+.route-card b{display:block;font-weight:700;font-size:16px;line-height:1.25}
+.route-card span{display:block;font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
+.route-card[aria-pressed="true"]{border-color:var(--marigold);box-shadow:inset 0 0 0 1px var(--marigold)}
+.dir-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dir-row .btn{padding:7px 12px;font-size:14px}
+.dir-row span{font-size:13px;color:#e6d9c3}
+.bus-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bus-card{position:relative;text-align:left;background:var(--panel-solid);border:1.5px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.bus-card canvas{width:100%;height:auto;aspect-ratio:1024/280;max-width:100%;border-radius:3px;display:block;background:#000}
+.bus-card .nm{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+.bus-card .nm b{font-family:var(--body);font-weight:700;font-size:20px}
+.bus-card .nm span{font-family:var(--ui);font-size:12px;color:var(--muted)}
+.bus-card .rt{font-size:12.5px;color:#d7c9b2;line-height:1.35}
+.bus-card[aria-pressed="true"]{border-color:var(--marigold);box-shadow:inset 0 0 0 1px var(--marigold)}
+.bus-card[aria-pressed="true"]::after{content:"আপনার বাস";position:absolute;top:6px;right:8px;background:var(--marigold);color:#2a1a08;font-family:var(--ui);font-weight:700;font-size:11px;padding:1px 7px;border-radius:3px}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center;font-size:11.5px;color:var(--muted)}
+.bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--marigold)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input{background:var(--panel-solid);border:1.5px solid rgba(255,255,255,.12);border-radius:6px;padding:10px 12px;font-family:var(--body);font-size:16px}
+.field input:focus{border-color:var(--marigold);outline:none}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.seg{display:flex;gap:4px;background:var(--panel-solid);border-radius:6px;padding:4px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:0;border:0;background:transparent;border-radius:4px;padding:7px 6px;font-family:var(--ui);font-weight:700;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--marigold);color:#2a1a08}
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn{border:0;border-radius:6px;padding:12px 16px;font-family:var(--ui);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;line-height:1.2}
+.btn small{font-weight:500;font-size:12px;opacity:.8}
+.btn-main{background:var(--marigold);color:#2a1a08;box-shadow:0 3px 0 #a8730c}
+.btn-main:active{transform:translateY(2px);box-shadow:0 1px 0 #a8730c}
+.btn-ghost{background:transparent;border:1.5px solid rgba(244,234,214,.28);color:var(--paper)}
+.btn-ghost:hover{border-color:var(--marigold)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.online{background:var(--panel-solid);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,.06)}
+.online-row{display:flex;gap:8px;flex-wrap:wrap}
+.online-row .btn{flex:1 1 140px}
+.online-row input{flex:1 1 120px;min-width:0;background:#17111a;border:1.5px solid rgba(255,255,255,.12);border-radius:6px;padding:10px 12px;font-family:var(--ui);font-weight:700;letter-spacing:.25em;text-transform:uppercase;font-size:16px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0}
+.keys{font-size:12.5px;color:var(--muted);line-height:1.7}
+kbd{font-family:var(--ui);font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--paper)}
+.credit{font-size:11.5px;color:#8e826f;line-height:1.55}
+
+.center{display:grid;place-items:center;background:rgba(23,17,26,.72)}
+.card{width:min(560px,100%);background:var(--panel-solid);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.card h2{margin:0;font-family:var(--display);font-weight:400;font-size:34px;color:var(--marigold);line-height:1.1}
+.code{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.code b{font-family:var(--ui);font-weight:800;font-size:40px;letter-spacing:.22em;color:var(--paper)}
+.seats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.seats li{display:flex;align-items:center;gap:10px;background:#1a141d;border-radius:5px;padding:8px 10px;min-width:0}
+.chip{width:14px;height:14px;border-radius:3px;flex:none;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.35)}
+.seats .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-family:var(--ui);font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;background:rgba(255,255,255,.1);color:var(--paper)}
+.pill.host{background:var(--teal)}
+.pill.me{background:var(--kantha)}
+.pick{display:flex;gap:6px;flex-wrap:wrap}
+.pick button{display:flex;align-items:center;gap:6px;background:#1a141d;border:1.5px solid transparent;border-radius:5px;padding:6px 10px;font-family:var(--body);font-weight:600}
+.pick button[aria-pressed="true"]{border-color:var(--marigold)}
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rank li{display:grid;grid-template-columns:28px 14px minmax(0,1fr) auto;gap:10px;align-items:center;background:#1a141d;border-radius:5px;padding:10px 12px}
+.rank li:first-child{background:linear-gradient(90deg,rgba(242,176,30,.22),#1a141d 70%)}
+.rank .pos{font-family:var(--display);font-size:24px;color:var(--marigold);line-height:1}
+.rank .who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .who small{display:block;color:var(--muted);font-size:12px;white-space:normal}
+.rank .tk{font-family:var(--ui);font-weight:800;font-size:20px;text-align:right}
+.rank .tk small{display:block;font-size:11.5px;font-weight:600;color:var(--fine)}
+.breakdown{font-size:13px;color:#e6d9c3;line-height:1.6;background:#1a141d;border-radius:5px;padding:8px 12px}
+.breakdown b{color:var(--marigold)}
+
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10;
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));
+  padding-block:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;justify-content:space-between}
+.hud-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.board{background:var(--busboard,#c8231c);color:var(--busink,#fff);border-radius:4px;padding:6px 12px 7px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.35);min-width:0;max-width:40vw}
+.board .bn{font-family:var(--body);font-weight:700;font-size:22px;line-height:1.1}
+.board .rt{font-size:12px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mid-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.clock{background:var(--panel);border-radius:6px;padding:4px 14px 6px;text-align:center;border:1px solid var(--line)}
+.clock b{display:block;font-family:var(--ui);font-weight:800;font-size:30px;line-height:1.05}
+.clock.hot b{color:var(--kantha)}
+.hud-btns{display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap;justify-content:center}
+.mini-btn{background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:4px 10px;font-family:var(--ui);font-size:12px;font-weight:700}
+.toasts{display:flex;flex-direction:column;gap:5px;align-items:center;max-width:min(460px,60vw)}
+.toast{background:var(--panel);border-radius:6px;padding:6px 12px;font-weight:600;font-size:14px;line-height:1.3;border-left:4px solid var(--teal);text-align:left}
+.toast.fine{border-left-color:var(--fine);background:rgba(70,14,14,.9)}
+.toast.fine b{color:#ffb4b4}
+.toast.event{border-left-color:var(--marigold);background:rgba(60,40,10,.92)}
+.toast.good{border-left-color:#38e06a;background:rgba(12,52,26,.9)}
+.stand{list-style:none;margin:0;padding:6px 8px;background:var(--panel);border-radius:6px;display:flex;flex-direction:column;gap:3px;min-width:150px;border:1px solid rgba(255,255,255,.06)}
+.stand li{display:grid;grid-template-columns:16px 12px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:13px}
+.stand li .p{font-family:var(--ui);font-weight:800;color:var(--marigold)}
+.stand li .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stand li .t{font-family:var(--ui);font-weight:700}
+.stand li.me{color:#fff}
+.stand li.me .n{font-weight:700}
+.left-col{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:8px;max-width:min(380px,72vw)}
+.next{background:var(--panel);border-left:4px solid var(--leaf);border-radius:0 6px 6px 0;padding:6px 12px;display:flex;flex-direction:column;gap:1px;max-width:100%}
+.next.hot{border-left-color:var(--marigold)}
+.next b{font-size:20px;font-weight:700;line-height:1.15}
+.next span{font-size:12.5px;color:#d9ccb6}
+.next .near{color:#b9d9c2}
+.next .warn{color:#ffcf6b;font-weight:600}
+.next .warn.red{color:#ff8a8a}
+.turn{background:rgba(19,135,123,.9);border-radius:6px;padding:4px 10px 5px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.turn svg{width:26px;height:26px;flex:none}
+.turn.off{background:rgba(160,30,30,.92)}
+.place{font-size:12px;color:#e6d9c3;background:var(--panel);border-radius:4px;padding:2px 8px}
+.hud-mid{flex:1;position:relative}
+.hud-bottom{display:flex;gap:10px;align-items:flex-end;justify-content:space-between}
+.cargo{background:var(--panel);border-radius:6px;padding:8px 12px;display:flex;gap:16px;align-items:flex-end;border:1px solid rgba(255,255,255,.06)}
+.cargo b{display:block;font-family:var(--ui);font-weight:800;font-size:26px;line-height:1}
+.cargo .fare b{color:var(--marigold)}
+.cargo .fn b{color:#ff9d9d;font-size:18px}
+.cargo .spd b{font-size:22px}
+.cargo .spd small{font-size:11px;color:var(--muted);font-weight:600}
+.seatbar{display:flex;gap:2px;margin-top:5px;flex-wrap:wrap;max-width:140px}
+.seatbar i{width:6px;height:6px;border-radius:1px;background:rgba(255,255,255,.14)}
+.seatbar i.on{background:var(--paper)}
+.seatbar i.out{background:var(--marigold)}
+.item{background:var(--panel);border-radius:6px;padding:8px 12px;border:1.5px dashed rgba(242,176,30,.4);min-width:118px}
+.item b{display:block;font-family:var(--body);font-size:18px;line-height:1.2}
+.item.has{border-style:solid;border-color:var(--marigold);background:rgba(60,40,10,.85)}
+.item small{font-size:11.5px;color:var(--muted)}
+#minimap{width:190px;height:190px;background:var(--panel);border-radius:50%;border:2px solid rgba(242,176,30,.35);pointer-events:auto;cursor:pointer}
+.hud-left{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.bubble{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:var(--paper);color:#24180f;border-radius:10px;padding:8px 14px 9px;max-width:min(460px,86vw);box-shadow:0 6px 18px rgba(0,0,0,.35);display:flex;gap:10px;align-items:baseline}
+.bubble::after{content:"";position:absolute;left:28px;bottom:-8px;border:8px solid transparent;border-top-color:var(--paper);border-bottom:0}
+.bubble .who{font-family:var(--ui);font-weight:800;font-size:11px;letter-spacing:.06em;color:var(--kantha);text-transform:uppercase;flex:none}
+.bubble span:last-child{font-weight:600;font-size:17px;line-height:1.35}
+.hint{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);background:rgba(23,17,26,.85);border:1.5px solid var(--marigold);color:var(--paper);border-radius:8px;padding:6px 14px;font-weight:600;font-size:15px;max-width:min(420px,86vw);text-align:center}
+.hint.go{border-color:#38e06a}
+.count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:min(28vw,190px);color:var(--marigold);text-shadow:5px 5px 0 var(--kantha),10px 10px 0 rgba(0,0,0,.35)}
+.netline{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);background:var(--panel);padding:2px 10px;border-radius:0 0 6px 6px;white-space:nowrap}
+#floaters{position:fixed;inset:0;pointer-events:none;z-index:12;overflow:hidden}
+.floater{position:absolute;font-family:var(--ui);font-weight:800;font-size:22px;color:var(--marigold);text-shadow:2px 2px 0 rgba(0,0,0,.55);transform:translate(-50%,-50%);white-space:nowrap}
+.floater.neg{color:#ff7d7d}
+
+#mapView{display:grid;place-items:center;background:rgba(14,10,16,.9);z-index:25}
+#mapView .wrap{display:flex;flex-direction:column;gap:10px;align-items:center;width:min(980px,100%)}
+#bigmap{width:min(96vw,980px);height:min(78vh,760px);background:#120d14;border-radius:8px;border:1px solid rgba(255,255,255,.08)}
+#mapView .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted)}
+
+#touch{position:fixed;left:0;right:0;bottom:0;z-index:15;pointer-events:none;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));
+  padding-bottom:max(14px,env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:flex-end}
+.tgroup{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
+.tbtn{width:70px;height:70px;border-radius:50%;background:rgba(23,17,26,.55);border:2px solid rgba(244,234,214,.35);display:grid;place-items:center;font-family:var(--ui);font-weight:800;font-size:15px;touch-action:none;color:var(--paper)}
+.tbtn.on{background:rgba(242,176,30,.55);border-color:var(--marigold)}
+.tbtn svg{width:30px;height:30px}
+.tcol{display:flex;flex-direction:column;gap:10px;align-items:center}
+.tbtn.small{width:56px;height:56px;font-size:13px}
+.tbtn.item-btn{border-color:var(--marigold)}
+body.touch #hud .hud-bottom{padding-bottom:86px}
+@media (orientation:portrait){ body.touch #hud .hud-bottom{padding-bottom:150px} }
+body.touch #hud .item small{display:none}
+
+@media (max-width:760px){
+  #menu{background:rgba(23,17,26,.92)}
+  .board{max-width:34vw}.board .bn{font-size:18px}.board .rt{display:none}
+  .clock b{font-size:24px}
+  .stand{min-width:118px}.stand li{font-size:12px}
+  #minimap{width:120px;height:120px}
+  .cargo{gap:10px;padding:6px 10px}.cargo b{font-size:21px}
+  .next b{font-size:17px}
+  .item{min-width:0}
+  .toasts{max-width:92vw}
+  .opts{grid-template-columns:1fr 1fr}
+}
+@media (max-height:520px){ #minimap,.seatbar,.next .near,.place{display:none} .next{padding:4px 10px} .next b{font-size:15px} body.touch #hud .hud-bottom{padding-bottom:78px} .tbtn{width:60px;height:60px} .tbtn.small{width:48px;height:48px} }
+@media (max-width:440px){ .bus-grid,.route-grid,.opts{grid-template-columns:1fr} .hud-left .item{display:none} }
+@media (prefers-reduced-motion:reduce){ .btn-main:active{transform:none} }
+</style>
+
+<canvas id="gl" aria-label="Dhaka Bus War 3D street view"></canvas>
+
+<div id="hud" hidden>
+  <div class="hud-top">
+    <div>
+      <div class="board" id="hBoard"><div class="bn" id="hBus">বলাকা</div><div class="rt" id="hRoute"></div></div>
+      <div class="left-col">
+        <div class="next" id="hNext"><span class="lbl">পরের স্টপ</span><b id="hNextName">—</b><span id="hNextInfo"></span><span class="near" id="hNear"></span><span class="warn" id="hWarn" hidden></span></div>
+        <div class="turn" id="hTurn" hidden><svg id="hTurnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></svg><span id="hTurnText"></span></div>
+        <div class="place" id="hPlace"></div>
+      </div>
+    </div>
+    <div class="mid-col">
+      <div class="clock" id="hClock"><span class="lbl">সময়</span><b class="num" id="hTime">৪:০০</b></div>
+      <div class="hud-btns" id="hudBtns">
+        <button class="mini-btn" id="muteBtn" type="button">শব্দ বন্ধ</button>
+        <button class="mini-btn" id="camBtn" type="button">ক্যামেরা</button>
+        <button class="mini-btn" id="mapBtn" type="button">ম্যাপ</button>
+        <button class="mini-btn" id="pauseBtn" type="button">থামান</button>
+      </div>
+      <div class="toasts" id="toasts"></div>
+    </div>
+    <ol class="stand" id="hStand"></ol>
+  </div>
+  <div class="hud-mid">
+    <div class="netline" id="netline" hidden></div>
+    <div class="count" id="count" hidden></div>
+    <div class="hint" id="hint" hidden></div>
+    <div class="bubble" id="bubble" hidden><span class="who">হেলপার</span><span id="bubbleText"></span></div>
+  </div>
+  <div class="hud-bottom">
+    <div class="hud-left">
+      <div class="cargo">
+        <div class="spd"><span class="lbl">গতি</span><b class="num" id="hSpeed">০</b><small>কিমি/ঘণ্টা</small></div>
+        <div><span class="lbl">যাত্রী</span><b class="num" id="hPax">০/৩৪</b><div class="seatbar" id="seatbar"></div></div>
+        <div class="fare"><span class="lbl">আয়</span><b class="num" id="hFare">৳০</b></div>
+        <div class="fn"><span class="lbl">জরিমানা</span><b class="num" id="hFine">৳০</b></div>
+      </div>
+      <div class="item" id="hItem"><span class="lbl">হাতে আছে</span><b id="hItemName">কিছু নাই</b><small id="hItemHint">রাস্তার হলুদ বাক্স ধরুন</small></div>
+    </div>
+    <canvas id="minimap" width="380" height="380" aria-label="Map around your bus, north up"></canvas>
+  </div>
+</div>
+<div id="floaters"></div>
+
+<div id="touch" hidden>
+  <div class="tgroup">
+    <button class="tbtn" id="tLeft" type="button" aria-label="Steer left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="tbtn" id="tRight" type="button" aria-label="Steer right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="tgroup">
+    <div class="tcol">
+      <button class="tbtn small" id="tHorn" type="button" aria-label="Horn">হর্ন</button>
+      <button class="tbtn" id="tBrake" type="button" aria-label="Brake or reverse">ব্রেক</button>
+    </div>
+    <div class="tcol">
+      <button class="tbtn small item-btn" id="tItem" type="button" aria-label="Use item">ছাড়ুন</button>
+      <button class="tbtn" id="tGas" type="button" aria-label="Accelerate">টান</button>
+    </div>
+  </div>
+</div>
+
+<section id="loading" class="screen"><div><b>ঢাকা বাস ওয়ার</b><span id="loadMsg">শহর সাজানো হচ্ছে…</span></div></section>
+
+<section id="menu" class="screen" hidden>
+  <div class="menu-col">
+    <div class="brand">
+      <span class="latin">DHAKA BUS WAR</span>
+      <h1>ঢাকা বাস ওয়ার</h1>
+      <p>আসল ঢাকার দিক মেনে বানানো শহর: উত্তরে উত্তরা-এয়ারপোর্ট, পূর্বে রামপুরা-বাড্ডা, মাঝখানে ফার্মগেট-শাহবাগ, দক্ষিণ-পশ্চিমে ধানমন্ডি। রুট বেছে নিন, যাত্রী তুলুন, ঠিক স্টপে নামান। ভাঙা রাস্তা, রেলগেট, সিগন্যাল আর রিকশার ভিড় সামলে আগে পৌঁছান।</p>
+    </div>
+
+    <div class="sec-h"><span class="lbl">রুট বাছাই করুন</span><span class="lbl" style="text-transform:none;letter-spacing:0">Pick a route</span></div>
+    <div class="route-grid" id="routeGrid"></div>
+    <div class="dir-row"><button class="btn btn-ghost" id="dirBtn" type="button">দিক উল্টান ⇄</button><span id="dirText"></span></div>
+
+    <div class="sec-h"><span class="lbl">বাস বাছাই করুন</span><span class="lbl" style="text-transform:none;letter-spacing:0">Pick your bus</span></div>
+    <div class="bus-grid" id="busGrid"></div>
+
+    <label class="field" for="nick"><span class="lbl">আপনার নাম</span><input id="nick" maxlength="14" placeholder="যেমন: সিফাত ওস্তাদ" autocomplete="off"></label>
+
+    <div class="opts">
+      <div class="field"><span class="lbl">সময়</span><div class="seg" id="durSeg"><button type="button" data-v="240">৪ মি</button><button type="button" data-v="360">৬ মি</button><button type="button" data-v="480">৮ মি</button></div></div>
+      <div class="field"><span class="lbl">গ্রাফিক্স</span><div class="seg" id="gfxSeg"><button type="button" data-v="1">উন্নত</button><button type="button" data-v="0">হালকা</button></div></div>
+      <div class="field"><span class="lbl">হেলপারের গলা</span><div class="seg" id="voiceSeg"><button type="button" data-v="1">চালু</button><button type="button" data-v="0">বন্ধ</button></div></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-main" id="soloBtn" type="button">একা খেলুন <small>৩টা AI বাসের সাথে</small></button>
+      <div class="online">
+        <div class="sec-h"><span class="lbl">বন্ধুদের সাথে · ৪ জন পর্যন্ত</span><span class="lbl" id="onlineState" style="text-transform:none;letter-spacing:0">চেক করা হচ্ছে…</span></div>
+        <div class="online-row"><button class="btn btn-ghost" id="createBtn" type="button" disabled>নতুন রুম খুলুন</button></div>
+        <div class="online-row">
+          <input id="joinCode" maxlength="4" placeholder="কোড" aria-label="Room code" autocomplete="off">
+          <button class="btn btn-ghost" id="joinBtn" type="button" disabled>রুমে ঢুকুন</button>
+        </div>
+        <p class="note" id="onlineNote">রুম খুললে ৪ অক্ষরের কোড পাবেন। বন্ধুরা একই পেজ খুলে কোড দিলেই একসাথে রেস। খালি সিটে AI চালাবে।</p>
+      </div>
+    </div>
+
+    <div class="keys">
+      <kbd>↑</kbd> <kbd>W</kbd> টান · <kbd>↓</kbd> <kbd>S</kbd> ব্রেক, থেমে থাকলে পিছনে · <kbd>←</kbd><kbd>→</kbd> স্টিয়ারিং · <kbd>H</kbd> হর্ন · <kbd>Space</kbd> জিনিস ছাড়ুন · <kbd>C</kbd> ক্যামেরা · <kbd>N</kbd> পুরো ম্যাপ · <kbd>Esc</kbd> থামান<br>
+      যেকোনো রাস্তায় ঢোকা যায়, মিডিয়ানের ফাঁকে ইউ-টার্ন করা যায়। স্টপের হলুদ ঘরে বাঁ দিকে চেপে প্রায় থামালে যাত্রী ওঠে-নামে। লাল বাতি, উল্টো পথ আর ধাক্কায় জরিমানা।
+    </div>
+    <div class="credit">রাস্তা, মোড়, স্থাপনা আর রেললাইন বসানো হয়েছে আসল অক্ষাংশ-দ্রাঘিমাংশ ধরে, দিক ঠিক রেখে দূরত্ব চার ভাগের এক ভাগ করা হয়েছে; রাস্তার চওড়া আসল মাপের কাছাকাছি। ভবনগুলো আসল স্থাপনার সরল রূপ। বাসের রং আসল বাস দেখে: বলাকা, রাইদা, শিকড়, মালঞ্চ। ভাড়া BRTA হারে: কিলোমিটার প্রতি ৳২.৫৩, সর্বনিম্ন ৳১০।</div>
+  </div>
+</section>
+
+<section id="lobby" class="screen center" hidden>
+  <div class="card">
+    <span class="lbl">অনলাইন রুম</span>
+    <div class="code"><b id="roomCode">----</b><button class="btn btn-ghost" id="copyCode" type="button" style="padding:6px 12px;font-size:14px">কোড কপি</button></div>
+    <p class="note">বন্ধুদের কোডটা দিন। তারা এই পেজ খুলে "রুমে ঢুকুন" চাপলেই এখানে চলে আসবে।</p>
+    <ol class="seats" id="seats"></ol>
+    <div class="field"><span class="lbl">আপনার বাস</span><div class="pick" id="lobbyPick"></div></div>
+    <p class="note" id="lobbyRoute"></p>
+    <p class="note" id="lobbyMsg"></p>
+    <div class="online-row">
+      <button class="btn btn-main" id="startBtn" type="button">রেস শুরু</button>
+      <button class="btn btn-ghost" id="leaveBtn" type="button">রুম ছাড়ুন</button>
+    </div>
+  </div>
+</section>
+
+<section id="results" class="screen center" hidden>
+  <div class="card">
+    <span class="lbl">দিন শেষের হিসাব</span>
+    <h2 id="resTitle">আজকের রাজা</h2>
+    <ol class="rank" id="rank"></ol>
+    <div class="breakdown" id="breakdown"></div>
+    <div class="online-row">
+      <button class="btn btn-main" id="againBtn" type="button">আবার খেলুন</button>
+      <button class="btn btn-ghost" id="homeBtn" type="button">মেনু</button>
+    </div>
+  </div>
+</section>
+
+<section id="pause" class="screen center" hidden>
+  <div class="card">
+    <h2>একটু চা-বিরতি</h2>
+    <div class="online-row">
+      <button class="btn btn-main" id="resumeBtn" type="button">চালিয়ে যান</button>
+      <button class="btn btn-ghost" id="quitBtn" type="button">মেনুতে ফিরুন</button>
+    </div>
+  </div>
+</section>
+
+<section id="mapView" class="screen" hidden>
+  <div class="wrap">
+    <canvas id="bigmap" width="1960" height="1520" aria-label="Full city map, north up"></canvas>
+    <div class="row"><span>উপরে উত্তর ↑ · হলুদ দাগ আপনার রুট · রঙিন বিন্দু বাসগুলো</span><button class="btn btn-ghost" id="mapClose" type="button" style="padding:6px 14px;font-size:14px">বন্ধ করুন</button></div>
+  </div>
+</section>
+
+<section id="fail" class="screen center" hidden>
+  <div class="card"><h2>৩D চালু হলো না</h2><p class="note" id="failMsg">এই ব্রাউজারে WebGL পাওয়া যায়নি, তাই রাস্তা আঁকা যাচ্ছে না। অন্য ব্রাউজার বা ডিভাইসে খুলে দেখুন।</p></div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+(function(){
