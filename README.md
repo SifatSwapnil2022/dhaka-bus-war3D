@@ -4,7 +4,7 @@
   <a href="media/dhaka-bus-war-promo.mp4"><img src="media/dhaka-bus-war-promo.gif" alt="Dhaka Bus War gameplay: Malibag rail gate, Kuril from above, the helper calling at Rampura" width="640"></a>
 </p>
 
-<p align="center"><b>▶ <a href="media/dhaka-bus-war-promo.mp4">Watch the 38-second trailer (MP4, with titles)</a></b></p>
+<p align="center"><b><a href="https://mywebsite-j7mf.onrender.com/play/dhaka-bus-war/">Play it in the browser</a></b> · <a href="media/dhaka-bus-war-promo.mp4">Watch the 38-second trailer</a></p>
 
 **ঢাকা বাস ওয়ার** is a 3D local-bus racing game set on Dhaka's real roads. You drive one of four real Dhaka buses (Bolaka, Raida, Shikor, Malancha), pick up jatri, drop them at the right stop and fight the other buses for passengers through rail gates, signals and broken roads.
 
@@ -37,7 +37,9 @@ It runs in the browser. Nothing needs to be installed.
 
 ## Play
 
-Open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari). Or serve the folder:
+Play online at **[mywebsite-j7mf.onrender.com/play/dhaka-bus-war](https://mywebsite-j7mf.onrender.com/play/dhaka-bus-war/)** (single-player against three AI buses).
+
+Or open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari), or serve the folder:
 
 ```bash
 python3 -m http.server 8000
