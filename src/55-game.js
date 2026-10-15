@@ -187,7 +187,7 @@ function raceStep(dt){
   worldTick(dt, W.t, W.isHost);
   for (const v of vehicles) {
     if (v.gone) { v.mesh.group.visible = false; continue; }
-    if (v.kind === 'me') { stepDrive(v, v.finished ? { th: v.speed > .3 ? -1 : 0, st: 0 } : playerInput(), dt); if (input.item && W.t > 0) { useItem(v); input.item = false; } if (input.horn) { input.horn = false; honk(v); helperSay('side', pick(HELPER.side), 1, true); } }
+    if (v.kind === 'me') { stepDrive(v, v.finished ? { th: v.speed > .3 ? -1 : 0, st: 0 } : (Game.auto ? Game.auto(v, dt) : playerInput()), dt); if (input.item && W.t > 0) { useItem(v); input.item = false; } if (input.horn) { input.horn = false; honk(v); helperSay('side', pick(HELPER.side), 1, true); } }
     else if (v.kind === 'ai') stepDrive(v, aiInput(v, dt), dt);
     else stepRemote(v, dt);
   }

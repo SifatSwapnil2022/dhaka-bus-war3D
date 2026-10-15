@@ -1,10 +1,10 @@
 # dhaka-bus-war3D
 
 <p align="center">
-  <a href="media/dhaka-bus-war-promo.mp4"><img src="media/dhaka-bus-war-promo.gif" alt="Dhaka Bus War gameplay: Malibag rail gate, Kuril from above, the helper calling at Rampura" width="640"></a>
+  <a href="media/dhaka-bus-war-promo.mp4"><img src="media/dhaka-bus-war-promo.gif" alt="Dhaka Bus War gameplay: race start, overtaking a rival bus, picking up passengers at Rampura, the Malibag rail gate" width="640"></a>
 </p>
 
-<p align="center"><b><a href="https://mywebsite-j7mf.onrender.com/play/dhaka-bus-war/">Play it in the browser</a></b> · <a href="media/dhaka-bus-war-promo.mp4">Watch the 38-second trailer</a></p>
+<p align="center"><b><a href="https://mywebsite-j7mf.onrender.com/play/dhaka-bus-war/">Play it in the browser</a></b> · <a href="media/dhaka-bus-war-promo.mp4">Watch the 50-second trailer</a></p>
 
 **ঢাকা বাস ওয়ার** is a 3D local-bus racing game set on Dhaka's real roads. You drive one of four real Dhaka buses (Bolaka, Raida, Shikor, Malancha), pick up jatri, drop them at the right stop and fight the other buses for passengers through rail gates, signals and broken roads.
 

@@ -31,7 +31,7 @@ async function boot(){
     initRoom();
   } catch (e) { console.error(e); FAIL('শহর বানাতে গিয়ে একটা সমস্যা হলো: ' + (e && e.message ? e.message : e)); }
 }
-window.__dbw = { Game, W, NET, get vehicles(){ return vehicles; }, AG, RPS, RAIL, METRO, LANDMARKS, LM_PLACED, FP, STOP_PLACES, STATIC_OBS, WATER, startRace, soloSeats, obb, get me(){ return me; }, input, raceStep, attractStep, armState, roadPush, nearestEdge, juncAt, routePath, rpAt, eAt, setupAttract, drawBigMap, toggleMap, camera, scene, renderer, TILES, AG_N: () => AG_N, aiScan, laneGap, rpLanes, rpMeta, aiInput, OBS: () => OBS, STATIC_OBS, trafficRows, netTraffic, stepProxies, adoptProxies, foci, PROXY, becomeHost, initTraffic, updateRail, helperSay, followSun, METRO_RP: () => METRO.RP, closeup: () => ({ camPos, camLook }) };
+window.__dbw = { Game, W, NET, get vehicles(){ return vehicles; }, AG, RPS, RAIL, METRO, LANDMARKS, LM_PLACED, FP, STOP_PLACES, STATIC_OBS, WATER, startRace, soloSeats, obb, get me(){ return me; }, input, raceStep, attractStep, armState, roadPush, nearestEdge, juncAt, routePath, rpAt, eAt, setupAttract, drawBigMap, toggleMap, camera, scene, renderer, TILES, AG_N: () => AG_N, aiScan, laneGap, rpLanes, rpMeta, aiInput, OBS: () => OBS, STATIC_OBS, trafficRows, netTraffic, stepProxies, adoptProxies, foci, PROXY, becomeHost, initTraffic, updateRail, helperSay, followSun, METRO_RP: () => METRO.RP, closeup: () => ({ camPos, camLook }), spawnAgent, listRemove, PROF };
 boot();
 })();
 </script>
